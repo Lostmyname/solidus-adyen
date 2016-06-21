@@ -159,6 +159,7 @@ module Spree
     def complete
       @order.contents.advance
       @order.complete
+      @order.complete?
     end
   end
 end
