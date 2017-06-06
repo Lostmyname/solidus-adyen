@@ -5,12 +5,13 @@ module Spree
     before_action :authenticate
 
     def notify
-      if notification_exists?(params)
+      notification = AdyenNotification.build(params)
+      begin
+        notification.save!
+      rescue ActiveRecord::RecordNotUnique
+        # Notification is a duplicate, ignore it and return a success.
         accept
       else
-        notification = AdyenNotification.build(params)
-        notification.save!
-
         # prevent alteration to associated payment while we're handling the action
         Spree::Adyen::NotificationProcessor.new(notification).process!
         accept
@@ -29,13 +30,6 @@ module Spree
     private
     def accept
       render text: "[accepted]"
-    end
-
-    def notification_exists? params
-      AdyenNotification.exists?(
-        psp_reference: params["pspReference"],
-        event_code: params["eventCode"]
-      )
     end
   end
 end
