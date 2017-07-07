@@ -14,8 +14,8 @@ module Spree
           yield(configuration)
         end
 
-        def payment_methods_from_directory order, payment_method
-          payment_methods(order, payment_method)
+        def payment_methods_from_directory order, payment_method, result_url: nil
+          payment_methods(order, payment_method, result_url: result_url)
         end
 
         def pay_url order, payment_method
@@ -30,9 +30,9 @@ module Spree
           endpoint_url "directory", order, payment_method
         end
 
-        def details_url order, payment_method, brand_code
+        def details_url order, payment_method, brand_code, result_url: nil
           endpoint_url(
-            "details", order, payment_method, { brandCode: brand_code })
+            "details", order, payment_method, { brandCode: brand_code, resURL: result_url })
         end
 
         def details_url_with_issuer order, payment_method, brand_code, issuer_id
@@ -64,17 +64,18 @@ module Spree
                                        shared_secret: payment_method.shared_secret)
         end
 
-        def payment_methods order, payment_method
+        def payment_methods order, payment_method, result_url: nil
           url = directory_url(order, payment_method)
 
           form_payment_methods_and_urls(
             JSON.parse(::Net::HTTP.get(url)),
             order,
-            payment_method
+            payment_method,
+            result_url: result_url,
           )
         end
 
-        def form_payment_methods_and_urls response, order, payment_method
+        def form_payment_methods_and_urls response, order, payment_method, result_url: nil
           response.fetch("paymentMethods").map do |brand|
             next unless payment_method_allows_brand_code?(payment_method, brand['brandCode'])
 
@@ -82,7 +83,7 @@ module Spree
               form_issuer(issuer, order, payment_method, brand)
             end
 
-            form_payment_method(brand, order, payment_method, issuers)
+            form_payment_method(brand, order, payment_method, issuers, result_url: result_url)
           end.compact
         end
 
@@ -98,14 +99,15 @@ module Spree
           }
         end
 
-        def form_payment_method brand, order, payment_method, issuers
+        def form_payment_method brand, order, payment_method, issuers, result_url: nil
           {
             brand_code: brand["brandCode"],
             name: brand["name"],
             payment_url: details_url(
               order,
               payment_method,
-              brand["brandCode"]
+              brand["brandCode"],
+              result_url: result_url,
             ).to_s,
             issuers: issuers
           }

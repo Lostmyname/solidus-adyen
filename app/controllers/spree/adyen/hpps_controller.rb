@@ -12,7 +12,9 @@ module Spree
       def directory
         @brands = Spree::Adyen::HPP.payment_methods_from_directory(
           @order,
-          @payment_method)
+          @payment_method,
+          result_url: spree.adyen_confirmation_url,
+        )
 
         respond_to do |format|
           format.html

@@ -11,7 +11,7 @@ RSpec.describe Spree::Adyen::HppsController, type: :controller do
 
     before do
       allow(Spree::Adyen::HPP).to receive(:payment_methods_from_directory).
-        with(order, payment_method).
+        with(order, payment_method, result_url: 'http://test.host/checkout/payment/adyen').
         and_return(parsed_directory_response)
     end
 

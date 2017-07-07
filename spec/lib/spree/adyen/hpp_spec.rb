@@ -162,7 +162,7 @@ RSpec.describe Spree::Adyen::HPP do
 
     it "calls form_payment_methods_and_urls with adyen response" do
       expect(described_class).to receive(:form_payment_methods_and_urls).
-        with({ "test" => "response" }, order, payment_method)
+        with({ "test" => "response" }, order, payment_method, result_url: nil)
       subject
     end
   end
@@ -291,7 +291,7 @@ RSpec.describe Spree::Adyen::HPP do
 
     it "calls endpoint url with the expected params" do
       expect(described_class).to receive(:endpoint_url).
-        with("details", order, payment_method, { brandCode: "paypal" })
+        with("details", order, payment_method, { brandCode: "paypal", resURL: nil })
       subject
     end
   end
