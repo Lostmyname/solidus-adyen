@@ -36,7 +36,7 @@ module Spree
       # can attempt to auth it. The payment of course is already auth'd and
       # adyen hpp's authorize implementation just returns a dummy response.
       @order.payments.create!(
-        amount: @order.total,
+        amount: @order.outstanding_balance,
         payment_method: @payment_method,
         source: source,
         response_code: psp_reference,
