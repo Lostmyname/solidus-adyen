@@ -20,7 +20,7 @@ group :test do
   gem "factory_girl"
   gem "timecop"
   gem "vcr"
-  gem "webmock", "~> 1.24"
+  gem "webmock"
   gem "selenium-webdriver"
 end
 

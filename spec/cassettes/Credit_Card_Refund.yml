@@ -2,7 +2,7 @@
 http_interactions:
 - request:
     method: post
-    uri: https://<ADYEN_API_USERNAME>:<ADYEN_API_PASSWORD>@pal-test.adyen.com/pal/servlet/soap/Payment
+    uri: https://pal-test.adyen.com/pal/servlet/soap/Payment
     body:
       encoding: UTF-8
       string: |-
@@ -62,7 +62,7 @@ http_interactions:
   recorded_at: Wed, 03 Aug 2016 21:13:22 GMT
 - request:
     method: post
-    uri: https://<ADYEN_API_USERNAME>:<ADYEN_API_PASSWORD>@pal-test.adyen.com/pal/adapter/httppost
+    uri: https://pal-test.adyen.com/pal/adapter/httppost
     body:
       encoding: US-ASCII
       string: modificationRequest.merchantAccount=<ADYEN_MERCHANT_ACCOUNT>&modificationRequest.modificationAmount.currency=USD&modificationRequest.modificationAmount.value=2000&modificationRequest.originalReference=7914713903212586&action=Payment.refund
