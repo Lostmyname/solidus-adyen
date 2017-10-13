@@ -4,21 +4,24 @@ module Spree
 
     before_action :authenticate
 
+    # Avoid collisions with the user being sent to AdyenRedirectController
+    class_attribute :processing_delay
+    self.processing_delay = 10.seconds
+
     def notify
       notification = AdyenNotification.build(params)
       begin
         notification.save!
       rescue ActiveRecord::RecordNotUnique
-        # Notification is a duplicate, ignore it and return a success.
-        accept
+        # Notification is a duplicate, ignore it.
       else
-        # prevent alteration to associated payment while we're handling the action
-        Spree::Adyen::NotificationProcessor.new(notification).process!
-        accept
+        enqueue_job(notification)
       end
+      accept
     end
 
-    protected
+    private
+
     # Enable HTTP basic authentication
     def authenticate
       authenticate_or_request_with_http_basic do |username, password|
@@ -27,9 +30,14 @@ module Spree
       end
     end
 
-    private
     def accept
       render text: "[accepted]"
+    end
+
+    def enqueue_job(notification)
+      Spree::Adyen::NotificationJob.set(
+        wait: processing_delay
+      ).perform_later(notification)
     end
   end
 end
