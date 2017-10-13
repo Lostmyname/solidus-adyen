@@ -7,17 +7,23 @@ module Spree
 
     # This is the entry point after an Adyen HPP payment is completed
     def confirm
-      # Reload order as it might have changed since previously loading it
-      # from an auth notification coming in at the same time.
-      # This and the notification processing need to have a lock on the order
-      # as they both decide what to do based on whether or not the order is
-      # complete.
+      # TODO: Find a better way of handling this than `with_lock`, which locks
+      # up both the DB and the web server processes.
       @order.with_lock do
-        @order.reload
-        if @order.complete?
-          confirm_order_already_completed
-        else
-          confirm_order_incomplete
+        # TODO: Graceful lock failure handling.  Unlikely to happen currently
+        # given the `with_lock` above.
+        Spree::OrderMutex.with_lock!(@order) do
+          # Reload order as it might have changed since previously loading it
+          # from an auth notification coming in at the same time.
+          # This and the notification processing need to have a lock on the
+          # order as they both decide what to do based on whether or not the
+          # order is complete.
+          @order.reload
+          if @order.complete?
+            confirm_order_already_completed
+          else
+            confirm_order_incomplete
+          end
         end
       end
     end
