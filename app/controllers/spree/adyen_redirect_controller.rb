@@ -13,6 +13,7 @@ module Spree
       # as they both decide what to do based on whether or not the order is
       # complete.
       @order.with_lock do
+        @order.reload
         if @order.complete?
           confirm_order_already_completed
         else
