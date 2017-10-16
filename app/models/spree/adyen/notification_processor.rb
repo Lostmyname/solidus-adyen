@@ -37,6 +37,7 @@ module Spree
         # TODO: Find a better way of handling this than `with_lock`, which locks
         # up both the DB and the web server processes.
         order.with_lock do
+          order.reload
           if should_create_payment?
             self.payment = create_missing_payment
           end
