@@ -34,24 +34,37 @@ module Spree
       def process!
         return notification if order.nil?
 
+        # TODO: Find a better way of handling this than `with_lock`, which locks
+        # up both the DB and the web server processes.
         order.with_lock do
-          if should_create_payment?
-            self.payment = create_missing_payment
-          end
-
-          if !notification.success?
-            handle_failure
-
-          elsif notification.modification_event?
-            handle_modification_event
-
-          elsif notification.normal_event?
-            handle_normal_event
-
+          # TODO: Graceful lock failure handling.  Unlikely to happen currently
+          # given the `with_lock` above.
+          Spree::OrderMutex.with_lock!(order) do
+            order.reload
+            process_locked
           end
         end
+      end
 
-        return notification
+      private
+
+      def process_locked
+        if should_create_payment?
+          self.payment = create_missing_payment
+        end
+
+        if !notification.success?
+          handle_failure
+
+        elsif notification.modification_event?
+          handle_modification_event
+
+        elsif notification.normal_event?
+          handle_normal_event
+
+        end
+
+        notification
       end
 
       private
