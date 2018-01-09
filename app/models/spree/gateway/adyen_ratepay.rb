@@ -1,5 +1,5 @@
 module Spree
-  class Gateway::AdyenRatepay < Spree::Gateway
+  class Gateway::AdyenRatepay < Spree::PaymentMethod
     class InvoiceRejectedError < Spree::Core::GatewayError; end
 
     class MissingDateOfBirthError < Spree::Core::GatewayError
