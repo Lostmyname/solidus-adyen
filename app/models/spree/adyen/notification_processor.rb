@@ -76,15 +76,27 @@ module Spree
           payment.void
 
         elsif notification.refund?
-          payment.refunds.create!(
-            amount: notification.value / 100.0, # cents to dollars
-            transaction_id: notification.psp_reference,
-            refund_reason_id: ::Spree::RefundReason.first.id # FIXME
-          )
-          # payment was processing, move back to completed
-          payment.complete! unless payment.completed?
+          unless any_refunds?
+            payments_refunds_create
+          end
           notification.processed!
         end
+      end
+      
+      def any_refunds?
+        payment.refunds.blank? && payment.refunds.select do |refund| 
+          refund.amount.to_f == order.total.to_f
+        end.blank?
+      end
+
+      def payments_refunds_create
+        payment.refunds.create!(
+          amount: notification.value / 100.0, # cents to dollars
+          transaction_id: notification.psp_reference,
+          refund_reason_id: ::Spree::RefundReason.first.id # FIXME
+        )
+        # payment was processing, move back to completed
+        payment.complete! unless payment.completed?
       end
 
       # normal event is defined as just AUTHORISATION
