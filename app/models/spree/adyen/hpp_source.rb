@@ -65,7 +65,9 @@ module Spree::Adyen
     def authorised?
       # Many banks return pending, this is considered a valid response and
       # the order should proceed.
-      [PENDING, AUTHORISED].include? auth_result
+      # update: July 10 2018. Removed PENDING status here because is causing
+      # false-positive completed orders being sent to PSP.
+      auth_result.include? "AUTHORISED"
     end
 
     private
